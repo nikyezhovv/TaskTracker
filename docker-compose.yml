@@ -1,0 +1,30 @@
+﻿services:
+  api:
+    container_name: tasktracker-api
+    build:
+      context: .
+      dockerfile: src/TaskTracker.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  notifications:
+    container_name: tasktracker-notifications
+    build:
+      context: .
+      dockerfile: src/TaskTracker.Notifications/Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  worker:
+    container_name: tasktracker-worker
+    build:
+      context: .
+      dockerfile: src/TaskTracker.Worker/Dockerfile
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+  
+#TODO: Монга, кролик
