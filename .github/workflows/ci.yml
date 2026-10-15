@@ -1,5 +1,12 @@
 ﻿name: CI Pipeline
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ "main" ]
@@ -11,8 +18,9 @@ env:
 
 jobs:
   format:
-    name: Format
+    name: Format Check
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -20,12 +28,29 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: '**/*.csproj'
+          
       - run: dotnet restore TaskTracker.sln
-      - run: dotnet format TaskTracker.sln --verify-no-changes
-
+      - run: dotnet format whitespace TaskTracker.sln --no-restore --verify-no-changes --verbosity minimal
+    
+  style:
+    name: Style Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+          
+      - run: dotnet restore TaskTracker.sln
+      - run: dotnet format style TaskTracker.sln --no-restore --verify-no-changes --severity warn --verbosity minimal
+      
   build:
     name: Build
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -33,13 +58,15 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: '**/*.csproj'
+          
       - run: dotnet restore TaskTracker.sln
       - run: dotnet build TaskTracker.sln --no-restore -c Release
 
   unit-tests:
     name: Unit Tests
-    needs: [format, build]
+    needs: [format, style, build]
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -47,13 +74,15 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: '**/*.csproj'
+          
       - run: dotnet restore TaskTracker.sln
       - run: dotnet test tests/TaskTracker.UnitTests/TaskTracker.UnitTests.csproj -c Release --no-restore
 
   integration-tests:
     name: Integration Tests
-    needs: [format, build]
+    needs: [format, style, build]
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -61,5 +90,6 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: '**/*.csproj'
+          
       - run: dotnet restore TaskTracker.sln
       - run: dotnet test tests/TaskTracker.IntegrationTests/TaskTracker.IntegrationTests.csproj -c Release --no-restore
