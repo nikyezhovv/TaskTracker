@@ -34,8 +34,6 @@ services:
     build:
       context: .
       dockerfile: src/TaskTracker.Worker/Dockerfile
-    ports:
-      - "${WORKER_PORT:-8082}:8080"
     environment:
       <<: *app-env
     depends_on:
@@ -45,7 +43,7 @@ services:
 
   prometheus:
     container_name: tasktracker-prometheus
-    image: prom/prometheus
+    image: prom/prometheus:v3.13.4
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
@@ -53,7 +51,7 @@ services:
 
   grafana:
     container_name: tasktracker-grafana
-    image: grafana/grafana-oss
+    image: grafana/grafana-oss:13.0.2
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     environment:
@@ -67,7 +65,7 @@ services:
 
   jaeger:
     container_name: tasktracker-jaeger
-    image: jaegertracing/jaeger:2.3.0
+    image: jaegertracing/jaeger:2.22.0
     ports:
       - "${JAEGER_UI_PORT:-16686}:16686"
       - "${JAEGER_OTLP_PORT:-4317}:4317"
