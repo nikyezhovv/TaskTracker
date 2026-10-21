@@ -1,13 +1,21 @@
-﻿services:
+﻿x-app-env: &app-env
+  ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+  Serilog__MinimumLevel__Default: ${LOG_LEVEL:-Information}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+  OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+
+services:
   api:
     container_name: tasktracker-api
     build:
       context: .
       dockerfile: src/TaskTracker.Api/Dockerfile
     ports:
-      - "8080:8080"
+      - "${API_PORT:-8080}:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      <<: *app-env
+    depends_on:
+      - jaeger
 
   notifications:
     container_name: tasktracker-notifications
@@ -15,9 +23,11 @@
       context: .
       dockerfile: src/TaskTracker.Notifications/Dockerfile
     ports:
-      - "8081:8080"
+      - "${NOTIFICATIONS_PORT:-8081}:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      <<: *app-env
+    depends_on:
+      - jaeger
 
   worker:
     container_name: tasktracker-worker
@@ -25,6 +35,40 @@
       context: .
       dockerfile: src/TaskTracker.Worker/Dockerfile
     environment:
-      - DOTNET_ENVIRONMENT=Development
-  
-#TODO: Монга, кролик
+      <<: *app-env
+    depends_on:
+      - jaeger
+
+  # TODO: mongo, rabbitmq
+
+  prometheus:
+    container_name: tasktracker-prometheus
+    image: prom/prometheus:v3.13.4
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    container_name: tasktracker-grafana
+    image: grafana/grafana-oss:13.0.2
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - ./observability/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./observability/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./observability/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+  jaeger:
+    container_name: tasktracker-jaeger
+    image: jaegertracing/jaeger:2.22.0
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686"
+      - "${JAEGER_OTLP_PORT:-4317}:4317"
+    command:
+      - "--set=receivers.otlp.protocols.http.endpoint=0.0.0.0:4318"
+      - "--set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317"
