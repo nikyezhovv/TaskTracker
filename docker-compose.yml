@@ -14,8 +14,12 @@ services:
       - "${API_PORT:-8080}:8080"
     environment:
       <<: *app-env
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=123456"
     depends_on:
-      - jaeger
+      postgres:
+          condition: service_healthy
+      jaeger:
+        condition: service_started
 
   notifications:
     container_name: tasktracker-notifications
@@ -38,6 +42,25 @@ services:
       <<: *app-env
     depends_on:
       - jaeger
+    
+  postgres:
+    image: postgres:17
+    container_name: tasktracker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tasktracker
+      POSTGRES_USER: tasktracker
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/TaskTracker.Api/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U tasktracker -d tasktracker" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # TODO: mongo, rabbitmq
 
@@ -72,3 +95,11 @@ services:
     command:
       - "--set=receivers.otlp.protocols.http.endpoint=0.0.0.0:4318"
       - "--set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317"
+  tasktracker.api:
+    image: tasktracker.api
+    build:
+      context: .
+      dockerfile: src/TaskTracker.Api/Dockerfile
+
+volumes:
+  postgres_data:
