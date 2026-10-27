@@ -6,7 +6,6 @@
 
 services:
   api:
-    container_name: tasktracker-api
     build:
       context: .
       dockerfile: src/TaskTracker.Api/Dockerfile
@@ -22,7 +21,6 @@ services:
         condition: service_started
 
   notifications:
-    container_name: tasktracker-notifications
     build:
       context: .
       dockerfile: src/TaskTracker.Notifications/Dockerfile
@@ -34,7 +32,6 @@ services:
       - jaeger
 
   worker:
-    container_name: tasktracker-worker
     build:
       context: .
       dockerfile: src/TaskTracker.Worker/Dockerfile
@@ -45,7 +42,6 @@ services:
     
   postgres:
     image: postgres:17
-    container_name: tasktracker-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: tasktracker
@@ -55,17 +51,15 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/TaskTracker.Api/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U tasktracker -d tasktracker" ]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  # TODO: mongo, rabbitmq
+  # TODO: rabbitmq
 
   prometheus:
-    container_name: tasktracker-prometheus
     image: prom/prometheus:v3.13.4
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
@@ -73,7 +67,6 @@ services:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
   grafana:
-    container_name: tasktracker-grafana
     image: grafana/grafana-oss:13.0.2
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
@@ -87,7 +80,6 @@ services:
       - prometheus
 
   jaeger:
-    container_name: tasktracker-jaeger
     image: jaegertracing/jaeger:2.22.0
     ports:
       - "${JAEGER_UI_PORT:-16686}:16686"
@@ -95,11 +87,5 @@ services:
     command:
       - "--set=receivers.otlp.protocols.http.endpoint=0.0.0.0:4318"
       - "--set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317"
-  tasktracker.api:
-    image: tasktracker.api
-    build:
-      context: .
-      dockerfile: src/TaskTracker.Api/Dockerfile
-
 volumes:
   postgres_data:

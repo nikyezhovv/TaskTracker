@@ -11,6 +11,10 @@ indent_size = 2
 
 # C# files
 [*.cs]
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.SA0001.severity = none
+dotnet_diagnostic.SA1503.severity = warning
+dotnet_diagnostic.SA1513.severity = warning
 
 #### Core EditorConfig Options ####
 
@@ -114,7 +118,7 @@ csharp_style_prefer_readonly_struct = true:suggestion
 csharp_style_prefer_readonly_struct_member = true:suggestion
 
 # Code-block preferences
-csharp_prefer_braces = when_multiline:silent
+csharp_prefer_braces = true:warning
 csharp_prefer_simple_using_statement = true:suggestion
 csharp_style_namespace_declarations = file_scoped:warning
 csharp_style_prefer_method_group_conversion = true:suggestion
@@ -148,6 +152,9 @@ csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_open_brace = all
 csharp_new_line_between_query_expression_clauses = true
+
+# Rider formatting and StyleCop inspection: blank line after a statement block
+resharper_csharp_blank_lines_after_block_statements = 1
 
 # Indentation preferences
 csharp_indent_block_contents = true
@@ -214,11 +221,11 @@ dotnet_naming_rule.events_should_be_pascalcase.severity = suggestion
 dotnet_naming_rule.events_should_be_pascalcase.symbols = events
 dotnet_naming_rule.events_should_be_pascalcase.style = pascalcase
 
-dotnet_naming_rule.local_variables_should_be_camelcase.severity = suggestion
+dotnet_naming_rule.local_variables_should_be_camelcase.severity = warning
 dotnet_naming_rule.local_variables_should_be_camelcase.symbols = local_variables
 dotnet_naming_rule.local_variables_should_be_camelcase.style = camelcase
 
-dotnet_naming_rule.local_constants_should_be_camelcase.severity = suggestion
+dotnet_naming_rule.local_constants_should_be_camelcase.severity = warning
 dotnet_naming_rule.local_constants_should_be_camelcase.symbols = local_constants
 dotnet_naming_rule.local_constants_should_be_camelcase.style = camelcase
 
