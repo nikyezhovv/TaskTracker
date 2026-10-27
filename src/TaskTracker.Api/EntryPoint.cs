@@ -1,5 +1,6 @@
 using Serilog;
 using Serilog.Formatting.Compact;
+
 using TaskTracker.Api.Implementations.HostConfiguration;
 using TaskTracker.Shared.Observability;
 

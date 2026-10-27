@@ -1,5 +1,7 @@
 using System.Globalization;
+
 using Microsoft.EntityFrameworkCore;
+
 using TaskTracker.Api.Implementations.Repositories;
 
 namespace TaskTracker.Api.Implementations.HostConfiguration;

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 using TaskTracker.Api.Implementations.Model;
 using TaskTracker.Api.Implementations.Repositories.Entities;
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 using TaskTracker.Api.Implementations.Model;
 using TaskTracker.Api.Implementations.Repositories.Entities;
 
@@ -58,9 +59,14 @@ public sealed class TaskRepository(AppDbContext dbContext) : ITaskRepository
     {
         var taskEntity = new TaskEntity
         {
-            Id = Guid.NewGuid(), OwnerId = ownerId, Title = taskCreateDtoRequest.Title.Trim(),
-            Description = taskCreateDtoRequest.Description, Deadline = taskCreateDtoRequest.Deadline?.ToUniversalTime(),
-            Status = TaskState.Todo, Priority = taskCreateDtoRequest.Priority, CreatedAt = DateTimeOffset.UtcNow,
+            Id = Guid.NewGuid(),
+            OwnerId = ownerId,
+            Title = taskCreateDtoRequest.Title.Trim(),
+            Description = taskCreateDtoRequest.Description,
+            Deadline = taskCreateDtoRequest.Deadline?.ToUniversalTime(),
+            Status = TaskState.Todo,
+            Priority = taskCreateDtoRequest.Priority,
+            CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
         };
         var tags = await GetOrCreateTagsAsync(taskCreateDtoRequest.Tags, cancellationToken);
