@@ -23,7 +23,7 @@ public static class TaskTrackerApiExtensions
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
         services.AddCommonsServices();
         services.AddTaskTrackerAuth(configuration);
-        
+
         return services;
     }
 }

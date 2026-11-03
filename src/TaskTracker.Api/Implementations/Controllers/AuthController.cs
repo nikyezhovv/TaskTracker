@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using TaskTracker.Api.Implementations.Model;
 using TaskTracker.Api.Implementations.Services;
 
@@ -34,7 +35,7 @@ public sealed class AuthController(AuthService authService) : ControllerBase
         return result is null ? Unauthorized() : Ok(result);
     }
 
-    [Authorize]
+    [AllowAnonymous]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout(LogoutRequest request, CancellationToken ct)
     {

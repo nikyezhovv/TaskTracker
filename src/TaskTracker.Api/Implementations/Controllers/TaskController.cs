@@ -1,7 +1,8 @@
 using System.Security.Claims;
 
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
 using TaskTracker.Api.Implementations.Model;
 using TaskTracker.Api.Implementations.Services;
 
