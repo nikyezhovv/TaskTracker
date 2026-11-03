@@ -2,7 +2,7 @@ using Serilog;
 using Serilog.Formatting.Compact;
 
 using TaskTracker.Shared.Observability;
-using TaskTracker.Worker;
+using TaskTracker.Worker.HostConfiguration;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(new RenderedCompactJsonFormatter())
@@ -12,8 +12,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     builder.AddObservability("TaskTracker.Worker");
-
-    builder.Services.AddHostedService<Worker>();
+    builder.Services.AddWorkerMessaging(builder.Configuration);
 
     var app = builder.Build();
     app.UseObservability();
