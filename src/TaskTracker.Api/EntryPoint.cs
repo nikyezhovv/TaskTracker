@@ -11,8 +11,8 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
     builder.AddObservability("TaskTracker.Api");
-    builder.Services.AddOpenApi();
     builder.Services.AddTaskTrackerApi(builder.Configuration);
 
     var app = builder.Build();
@@ -23,10 +23,17 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint(
+                "/openapi/v1.json",
+                "TaskTracker API v1"
+            );
+        });
     }
 
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.MapControllers();
     app.Run();
 }
