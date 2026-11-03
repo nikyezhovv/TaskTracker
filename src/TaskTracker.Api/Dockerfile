@@ -7,6 +7,8 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /workspace
 
+COPY ["Directory.Build.props", "./"]
+COPY [".editorconfig", "./"]
 COPY ["src/TaskTracker.Api/TaskTracker.Api.csproj", "src/TaskTracker.Api/"]
 COPY ["src/TaskTracker.Shared/TaskTracker.Shared.csproj", "src/TaskTracker.Shared/"]
 RUN dotnet restore "src/TaskTracker.Api/TaskTracker.Api.csproj"
