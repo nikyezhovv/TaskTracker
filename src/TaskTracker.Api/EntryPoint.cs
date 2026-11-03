@@ -14,6 +14,10 @@ try
 
     builder.AddObservability("TaskTracker.Api");
     builder.Services.AddTaskTrackerApi(builder.Configuration);
+    builder.Services.AddOpenApi(options =>
+    {
+        options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    });
 
     var app = builder.Build();
     await app.Services.ApplyDatabaseMigrationsAsync();
@@ -29,6 +33,29 @@ try
                 "/openapi/v1.json",
                 "TaskTracker API v1"
             );
+            options.UseRequestInterceptor("""
+                (request) => {
+                    const accessToken = window.localStorage.getItem("tasktracker_access_token");
+                    if (accessToken) {
+                        request.headers = request.headers || {};
+                        request.headers["Authorization"] = `Bearer ${accessToken}`;
+                    }
+                    return request;
+                }
+                """);
+            options.UseResponseInterceptor("""
+                (response) => {
+                    if (response.url.endsWith("/api/auth/login") && response.status === 200 && response.text) {
+                        try {
+                            const loginResult = JSON.parse(response.text);
+                            if (loginResult.accessToken) {
+                                window.localStorage.setItem("tasktracker_access_token", loginResult.accessToken);
+                            }
+                        } catch (_) { }
+                    }
+                    return response;
+                }
+                """);
         });
     }
 

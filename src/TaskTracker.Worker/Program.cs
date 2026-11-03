@@ -13,6 +13,7 @@ try
     var builder = WebApplication.CreateBuilder(args);
     builder.AddObservability("TaskTracker.Worker");
     builder.Services.AddWorkerMessaging(builder.Configuration);
+    builder.Services.AddDeadlineReminderProcessing(builder.Configuration);
 
     var app = builder.Build();
     app.UseObservability();
