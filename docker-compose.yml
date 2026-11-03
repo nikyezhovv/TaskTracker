@@ -13,7 +13,7 @@ services:
       - "${API_PORT:-8080}:8080"
     environment:
       <<: *app-env
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=${POSTGRES_PASSWORD:-123456}"
       Jwt__Issuer: "TaskTracker"
       Jwt__Audience: "TaskTracker.Client"
       Jwt__Key: "${JWT_SIGNING_KEY}"
@@ -34,6 +34,9 @@ services:
       RabbitMq__Host: rabbitmq
       RabbitMq__Username: tasktracker
       RabbitMq__Password: ${RABBITMQ_PASSWORD:-tasktracker-local}
+      Jwt__Issuer: "TaskTracker"
+      Jwt__Audience: "TaskTracker.Client"
+      Jwt__Key: "${JWT_SIGNING_KEY}"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -49,8 +52,11 @@ services:
       RabbitMq__Host: rabbitmq
       RabbitMq__Username: tasktracker
       RabbitMq__Password: ${RABBITMQ_PASSWORD:-tasktracker-local}
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=${POSTGRES_PASSWORD:-123456}"
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
       jaeger:
         condition: service_started
@@ -61,7 +67,7 @@ services:
     environment:
       POSTGRES_DB: tasktracker
       POSTGRES_USER: tasktracker
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456}
     ports:
       - "5432:5432"
     volumes:

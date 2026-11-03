@@ -72,6 +72,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             e.Property(x => x.Title).HasColumnName("title").HasMaxLength(300).IsRequired();
             e.Property(x => x.Description).HasColumnName("description");
             e.Property(x => x.Deadline).HasColumnName("deadline");
+            e.Property(x => x.DeadlineReminderSentAt).HasColumnName("deadline_reminder_sent_at");
+            e.Property(x => x.DeadlineReminderLeaseUntil).HasColumnName("deadline_reminder_lease_until");
+            e.Property(x => x.DeadlineReminderLeaseId).HasColumnName("deadline_reminder_lease_id");
             e.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.Priority).HasColumnName("priority").HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -81,6 +84,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             e.HasIndex(x => new { x.OwnerId, x.Priority }).HasDatabaseName("ix_tasks_owner_priority");
             e.HasIndex(x => new { x.OwnerId, x.Deadline }).HasDatabaseName("ix_tasks_owner_deadline");
             e.HasIndex(x => x.Deadline).HasDatabaseName("ix_tasks_deadline").HasFilter("deadline IS NOT NULL");
+            e.HasIndex(x => new { x.Deadline, x.Id })
+                .HasDatabaseName("ix_tasks_deadline_reminder_due")
+                .HasFilter("deadline IS NOT NULL AND status <> 'Done' AND deadline_reminder_sent_at IS NULL");
             e.HasOne(x => x.Owner).WithMany(x => x.Tasks).HasForeignKey(x => x.OwnerId).OnDelete(DeleteBehavior.NoAction).HasConstraintName("fk_tasks_owner");
         });
 

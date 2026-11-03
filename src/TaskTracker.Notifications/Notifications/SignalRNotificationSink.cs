@@ -15,6 +15,7 @@ public sealed class SignalRNotificationSink(IHubContext<NotificationHub> hubCont
             message = $"Дедлайн задачи '{reminderEvent.TaskTitle}' скоро наступит.",
             data = new
             {
+                notificationId = reminderEvent.ReminderId,
                 taskId = reminderEvent.TaskId,
                 deadline = reminderEvent.Deadline
             }

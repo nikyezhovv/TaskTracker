@@ -53,6 +53,7 @@ public sealed class TaskDeadlineReminderMessagingTests
             var reminderEvent = new TaskDeadlineReminderEvent(
                 Guid.NewGuid(),
                 Guid.NewGuid(),
+                Guid.NewGuid(),
                 "Сдать проект",
                 DateTimeOffset.UtcNow.AddMinutes(15),
                 DateTimeOffset.UtcNow);

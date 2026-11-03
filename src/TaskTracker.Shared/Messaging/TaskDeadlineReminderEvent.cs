@@ -1,6 +1,7 @@
 namespace TaskTracker.Contracts;
 
 public sealed record TaskDeadlineReminderEvent(
+    Guid ReminderId,
     Guid TaskId,
     Guid OwnerId,
     string TaskTitle,

@@ -9,6 +9,9 @@ public sealed class TaskEntity
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTimeOffset? Deadline { get; set; }
+    public DateTimeOffset? DeadlineReminderSentAt { get; set; }
+    public DateTimeOffset? DeadlineReminderLeaseUntil { get; set; }
+    public Guid? DeadlineReminderLeaseId { get; set; }
     public TaskState Status { get; set; } = TaskState.Todo;
     public TaskPriority Priority { get; set; } = TaskPriority.Medium;
     public DateTimeOffset CreatedAt { get; set; }
