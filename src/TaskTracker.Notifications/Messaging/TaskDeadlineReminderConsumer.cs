@@ -1,7 +1,7 @@
 using MassTransit;
 
-using TaskTracker.Notifications.Notifications;
 using TaskTracker.Contracts;
+using TaskTracker.Notifications.Notifications;
 
 namespace TaskTracker.Notifications.Messaging;
 

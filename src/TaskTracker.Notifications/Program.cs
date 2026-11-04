@@ -1,9 +1,9 @@
 using Serilog;
 using Serilog.Formatting.Compact;
 
-using TaskTracker.Shared.Observability;
 using TaskTracker.Notifications.HostConfiguration;
 using TaskTracker.Notifications.Notifications;
+using TaskTracker.Shared.Observability;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(new RenderedCompactJsonFormatter())

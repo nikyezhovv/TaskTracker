@@ -1,12 +1,13 @@
 using MassTransit;
 
 using Microsoft.Extensions.DependencyInjection;
-using Testcontainers.RabbitMq;
 
+using TaskTracker.Contracts;
 using TaskTracker.Notifications.Messaging;
 using TaskTracker.Notifications.Notifications;
-using TaskTracker.Contracts;
 using TaskTracker.Worker.Messaging;
+
+using Testcontainers.RabbitMq;
 
 namespace TaskTracker.IntegrationTests;
 
