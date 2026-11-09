@@ -13,7 +13,10 @@ services:
       - "${API_PORT:-8080}:8080"
     environment:
       <<: *app-env
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=123456"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=${POSTGRES_PASSWORD}"
+      Jwt__Issuer: "TaskTracker"
+      Jwt__Audience: "TaskTracker.Client"
+      Jwt__Key: "${JWT_SIGNING_KEY}"
     depends_on:
       postgres:
           condition: service_healthy

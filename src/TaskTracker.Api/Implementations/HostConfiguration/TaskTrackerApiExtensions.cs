@@ -19,9 +19,11 @@ public static class TaskTrackerApiExtensions
             jsonOptions.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             jsonOptions.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
         });
-        services.AddSwaggerGen();
+        services.AddOpenApi();
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
         services.AddCommonsServices();
+        services.AddTaskTrackerAuth(configuration);
+
         return services;
     }
 }
