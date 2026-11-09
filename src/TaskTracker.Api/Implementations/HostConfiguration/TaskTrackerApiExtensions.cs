@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,46 @@ public static class TaskTrackerApiExtensions
             jsonOptions.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             jsonOptions.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
         });
-        services.AddOpenApi();
+        services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer((document, context, ct) =>
+            {
+                document.Components ??= new OpenApiComponents();
+
+                document.Components.SecuritySchemes =
+                    new Dictionary<string, IOpenApiSecurityScheme>
+                    {
+                        ["Bearer"] = new OpenApiSecurityScheme
+                        {
+                            Type = SecuritySchemeType.Http,
+                            Scheme = "bearer",
+                            BearerFormat = "JWT"
+                        }
+                    };
+
+                foreach (var path in document.Paths)
+                {
+                    if (!path.Key.StartsWith(
+                            "/api/tasks",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    foreach (var operation in path.Value.Operations!.Values)
+                    {
+                        operation.Security ??= [];
+                        operation.Security.Add(new OpenApiSecurityRequirement
+                        {
+                            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                        });
+                    }
+                }
+
+                return Task.CompletedTask;
+            });
+        });
+        
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
         services.AddCommonsServices();
         services.AddTaskTrackerAuth(configuration);
