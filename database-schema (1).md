@@ -60,12 +60,17 @@
 | `title` | `VARCHAR(300)` | NOT NULL, CHECK не пустая строка | Заголовок |
 | `description` | `TEXT` | NULL | Описание |
 | `deadline` | `TIMESTAMPTZ` | NULL | Дедлайн |
+| `deadline_reminder_sent_at` | `TIMESTAMPTZ` | NULL | Время публикации напоминания в RabbitMQ; NULL означает, что напоминание ещё не опубликовано |
+| `deadline_reminder_lease_until` | `TIMESTAMPTZ` | NULL | Время окончания временной блокировки строки Worker-ом |
+| `deadline_reminder_lease_id` | `UUID` | NULL | Токен владельца lease для безопасного завершения/повтора |
 | `status` | `VARCHAR(20)` | NOT NULL, CHECK из разрешённых значений | `Todo`, `InProgress`, `Done` |
 | `priority` | `VARCHAR(20)` | NOT NULL, CHECK из разрешённых значений | `Low`, `Medium`, `High` |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL | Время создания |
 | `updated_at` | `TIMESTAMPTZ` | NOT NULL | Время изменения |
 
 **Почему так:** задача принадлежит одному пользователю, пользователь может иметь много задач (`users 1:N tasks`). Статус и приоритет хранятся как ограниченные строки, а не PostgreSQL ENUM, чтобы их было проще расширять миграцией. Значения по умолчанию для `status` и обязательность `priority` следует подтвердить.
+
+Для выбора ближайших напоминаний используется частичный индекс `ix_tasks_deadline_reminder_due` по `(deadline, id)` для задач, которые не завершены и ещё не напоминались. Репозиторий в Shared выбирает небольшую пачку кандидатов, затем условно обновляет их lease одним EF Core `ExecuteUpdate`; при одновременной обработке реплик условие lease позволяет захватить каждую строку только одной реплике.
 
 ### 2.4 `tags`
 

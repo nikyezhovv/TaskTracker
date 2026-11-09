@@ -86,9 +86,17 @@ public sealed class TaskRepository(AppDbContext dbContext) : ITaskRepository
             return null;
         }
 
+        var updatedDeadline = taskUpdateDtoRequest.Deadline?.ToUniversalTime();
+        if (taskEntity.Deadline != updatedDeadline)
+        {
+            taskEntity.DeadlineReminderSentAt = null;
+            taskEntity.DeadlineReminderLeaseUntil = null;
+            taskEntity.DeadlineReminderLeaseId = null;
+        }
+
         taskEntity.Title = taskUpdateDtoRequest.Title.Trim();
         taskEntity.Description = taskUpdateDtoRequest.Description;
-        taskEntity.Deadline = taskUpdateDtoRequest.Deadline?.ToUniversalTime();
+        taskEntity.Deadline = updatedDeadline;
         taskEntity.Status = taskUpdateDtoRequest.Status;
         taskEntity.Priority = taskUpdateDtoRequest.Priority;
         taskEntity.UpdatedAt = DateTimeOffset.UtcNow;

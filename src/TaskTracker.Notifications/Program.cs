@@ -1,6 +1,8 @@
 using Serilog;
 using Serilog.Formatting.Compact;
 
+using TaskTracker.Notifications.HostConfiguration;
+using TaskTracker.Notifications.Notifications;
 using TaskTracker.Shared.Observability;
 
 Log.Logger = new LoggerConfiguration()
@@ -11,11 +13,12 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     builder.AddObservability("TaskTracker.Notifications");
+    builder.Services.AddNotificationMessaging(builder.Configuration);
 
     var app = builder.Build();
     app.UseObservability();
 
-    app.MapGet("/", () => "Hello World!");
+    app.MapHub<NotificationHub>("/hubs/notifications");
 
     app.Run();
 }

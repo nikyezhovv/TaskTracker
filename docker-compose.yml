@@ -13,7 +13,7 @@ services:
       - "${API_PORT:-8080}:8080"
     environment:
       <<: *app-env
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=${POSTGRES_PASSWORD:-123456}"
       Jwt__Issuer: "TaskTracker"
       Jwt__Audience: "TaskTracker.Client"
       Jwt__Key: "${JWT_SIGNING_KEY}"
@@ -31,8 +31,14 @@ services:
       - "${NOTIFICATIONS_PORT:-8081}:8080"
     environment:
       <<: *app-env
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: tasktracker
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:-tasktracker-local}
     depends_on:
-      - jaeger
+      rabbitmq:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
 
   worker:
     build:
@@ -40,8 +46,17 @@ services:
       dockerfile: src/TaskTracker.Worker/Dockerfile
     environment:
       <<: *app-env
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: tasktracker
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:-tasktracker-local}
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=tasktracker;Username=tasktracker;Password=${POSTGRES_PASSWORD:-123456}"
     depends_on:
-      - jaeger
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
     
   postgres:
     image: postgres:17
@@ -49,7 +64,7 @@ services:
     environment:
       POSTGRES_DB: tasktracker
       POSTGRES_USER: tasktracker
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456}
     ports:
       - "5432:5432"
     volumes:
@@ -60,7 +75,23 @@ services:
       timeout: 5s
       retries: 10
 
-  # TODO: rabbitmq
+  rabbitmq:
+    image: rabbitmq:4-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: tasktracker
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-tasktracker-local}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   prometheus:
     image: prom/prometheus:v3.13.4
@@ -92,3 +123,4 @@ services:
       - "--set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317"
 volumes:
   postgres_data:
+  rabbitmq_data:

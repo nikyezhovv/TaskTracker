@@ -278,6 +278,18 @@ namespace TaskTracker.Api.Implementations.Repositories.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deadline");
 
+                    b.Property<Guid?>("DeadlineReminderLeaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deadline_reminder_lease_id");
+
+                    b.Property<DateTimeOffset?>("DeadlineReminderLeaseUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deadline_reminder_lease_until");
+
+                    b.Property<DateTimeOffset?>("DeadlineReminderSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deadline_reminder_sent_at");
+
                     b.Property<string>("Description")
                         .HasColumnType("text")
                         .HasColumnName("description");
@@ -316,6 +328,10 @@ namespace TaskTracker.Api.Implementations.Repositories.Migrations
                     b.HasIndex("Deadline")
                         .HasDatabaseName("ix_tasks_deadline")
                         .HasFilter("deadline IS NOT NULL");
+
+                    b.HasIndex("Deadline", "Id")
+                        .HasDatabaseName("ix_tasks_deadline_reminder_due")
+                        .HasFilter("deadline IS NOT NULL AND status <> 'Done' AND deadline_reminder_sent_at IS NULL");
 
                     b.HasIndex("OwnerId", "Deadline")
                         .HasDatabaseName("ix_tasks_owner_deadline");
