@@ -14,16 +14,18 @@ public sealed class BearerSecuritySchemeTransformer
     {
         document.Components ??= new OpenApiComponents();
         document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
-
-        document.Components.SecuritySchemes.Add(
-            "Bearer",
-            new OpenApiSecurityScheme
-            {
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                Description = "JWT Authorization"
-            });
+        var scheme = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "JWT Authorization"
+        };
+        
+        if (!document.Components.SecuritySchemes.ContainsKey("Bearer"))
+        {
+            document.Components.SecuritySchemes.Add("Bearer", scheme);
+        }
 
         foreach (var operation in document.Paths.Values
                      .SelectMany(path => path.Operations!))
